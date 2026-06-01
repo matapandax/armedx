@@ -6,13 +6,13 @@
             "value": "enialrahs"
         },
         "location": {
-            "value": "southeastasia" 
+            "value": "southeastasia"
         },
         "virtualMachineSize": {
             "value": "Standard_D3_v2"
         },
         "diskSize": {
-            "value": 50
+            "value": 80
         },
         "adminUsername": {
             "value": "azureuser"

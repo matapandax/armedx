@@ -1,0 +1,5 @@
+templates/stamp/parameters.local.json
+*.local.json
+key
+key.pub
+*.pem

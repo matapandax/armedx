@@ -4,7 +4,7 @@
     "parameters": {
         "location": {
             "type": "string",
-            "defaultValue":"[resourceGroup().id]",
+            "defaultValue":"[resourceGroup().location]",
             "metadata": {
                 "description":"Location of all resources."
             }
@@ -43,11 +43,11 @@
                 "description": "Administrator username."
             }
         },
-        "adminPublicKey": {
+        "adminPassword": {
             "type": "securestring",
             "defaultValue":"",
             "metadata": {
-                "description": "SSH Key for the Virtual Machine."
+                "description": "Password for the Virtual Machine administrator account."
             }
         },
         "diskSize": {
@@ -59,28 +59,28 @@
         },
         "installerGithubAccountName": {
             "type": "string",
-            "defaultValue": "onecliquezone",
+            "defaultValue": "edx",
             "metadata": {
-                "description": "Open EdX installer Github account name"
+                "description": "Legacy parameter. Koa install uses edxConfigurationGithubAccountName."
             }
         },
         "installerGithubProjectName": {
             "type": "string",
-            "defaultValue": "enialrahs",
+            "defaultValue": "configuration",
             "metadata": {
-                "description": "Open EdX installer Github project name"
+                "description": "Legacy parameter. Koa install uses edxConfigurationGithubProjectName."
             }
         },
         "installerGithubBranch": {
             "type": "string",
-            "defaultValue": "master",
+            "defaultValue": "open-release/koa.master",
             "metadata": {
-                "description": "Open EdX installer Github branch"
+                "description": "Legacy parameter. Koa install uses edxConfigurationGithubBranch."
             }
         },
         "edxConfigurationGithubAccountName": {
             "type": "string",
-            "defaultValue": "onecliquezone",
+            "defaultValue": "edx",
             "metadata": {
                 "description": "Open EdX configuration Github account name."
             }
@@ -317,8 +317,10 @@
         "virtualMachineComputerName": "[variables('clusterName')]",
 
         "diskNameSalt": "20201207080015",
-        "diskStorageAccountName": "[concat(variables('clusterName'), 'vhsa')]",
-        "diagnosticsStorageAccountName": "[concat(variables('clusterName'), 'diag')]",
+        "storageAccountNamePrefix": "[take(replace(variables('clusterName'), '-', ''), 7)]",
+        "storageAccountNameSuffix": "[uniqueString(resourceGroup().id, variables('clusterName'))]",
+        "diskStorageAccountName": "[concat(variables('storageAccountNamePrefix'), variables('storageAccountNameSuffix'), 'vhsa')]",
+        "diagnosticsStorageAccountName": "[concat(variables('storageAccountNamePrefix'), variables('storageAccountNameSuffix'), 'diag')]",
         "storageAccountType": "Standard_LRS",
         "storageAccountKind": "Storage",
         
@@ -357,7 +359,7 @@
                     "enableTcpReset": false,
                     "loadDistribution": "SourceIP",
                     "backendAddressPool": {
-                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backendpoolName'))]"
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backEndPoolName'))]"
                     },
                     "probe": {
                         "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/', variables('tcpProbeCMSName'))]"
@@ -378,7 +380,7 @@
                     "enableTcpReset": false,
                     "loadDistribution": "SourceIP",
                     "backendAddressPool": {
-                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backendpoolName'))]"
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backEndPoolName'))]"
                     },
                     "probe": {
                         "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/', variables('tcpProbeCMSSSLName'))]"
@@ -399,7 +401,7 @@
                     "enableTcpReset": false,
                     "loadDistribution": "SourceIP",
                     "backendAddressPool": {
-                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backendpoolName'))]"
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backEndPoolName'))]"
                     },
                     "probe": {
                         "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/', variables('tcpProbeLMSName'))]"
@@ -420,7 +422,7 @@
                     "enableTcpReset": false,
                     "loadDistribution": "SourceIP",
                     "backendAddressPool": {
-                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backendpoolName'))]"
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backEndPoolName'))]"
                     },
                     "probe": {
                         "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/', variables('tcpProbeLMSSSLName'))]"
@@ -565,8 +567,7 @@
                 "publicIPAddressVersion": "IPv4",
                 "idleTimeoutInMinutes": 4,
                 "dnsSettings": {
-                    "domainNameLabel": "[variables('cmsPublicIpAddressName')]",
-                    "fqdn": "[concat(variables('cmsPublicIpAddressName'), '.southeastasia.cloudapp.azure.com')]"
+                    "domainNameLabel": "[variables('cmsPublicIpAddressName')]"
                 }
             }
         },
@@ -583,8 +584,7 @@
                 "publicIPAddressVersion": "IPv4",
                 "idleTimeoutInMinutes": 4,
                 "dnsSettings": {
-                    "domainNameLabel": "[variables('lmsPublicIpAddressName')]",
-                    "fqdn": "[concat(variables('lmsPublicIpAddressName'), '.southeastasia.cloudapp.azure.com')]"
+                    "domainNameLabel": "[variables('lmsPublicIpAddressName')]"
                 }
             }
         },
@@ -617,10 +617,10 @@
                     {
                         "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', variables('lmsTrafficManagerName')), '/externalEndpoints/endpoint')]",
                         "name": "endpoint",
-                        "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
-                        "properties": {
-                            "endpointStatus": "Enabled",
-                            "target": "[concat(variables('lmsPublicIpAddressName'), '.southeastasia.cloudapp.azure.com')]",
+                            "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
+                            "properties": {
+                                "endpointStatus": "Enabled",
+                            "target": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('lmsPublicIpAddressName')), '2019-02-01').dnsSettings.fqdn]",
                             "weight": 1,
                             "priority": 1
                         }
@@ -659,10 +659,10 @@
                     {
                         "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', variables('cmsTrafficManagerName')), '/externalEndpoints/endpoint')]",
                         "name": "endpoint",
-                        "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
-                        "properties": {
-                            "endpointStatus": "Enabled",
-                            "target": "[concat(variables('cmsPublicIpAddressName'), '.southeastasia.cloudapp.azure.com')]",
+                            "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
+                            "properties": {
+                                "endpointStatus": "Enabled",
+                            "target": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('cmsPublicIpAddressName')), '2019-02-01').dnsSettings.fqdn]",
                             "weight": 1,
                             "priority": 1
                         }
@@ -705,8 +705,7 @@
                 "publicIPAddressVersion": "IPv4",
                 "idleTimeoutInMinutes": 4,
                 "dnsSettings": {
-                    "domainNameLabel": "[variables('clusterName')]",
-                    "fqdn": "[concat(variables('clusterName'), '.southeastasia.cloudapp.azure.com')]"
+                    "domainNameLabel": "[variables('clusterName')]"
                 }
             },
             "sku": {
@@ -765,16 +764,9 @@
                 "osProfile": {
                     "computerName": "[variables('virtualMachineComputerName')]",
                     "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
                     "linuxConfiguration": {
-                        "disablePasswordAuthentication": true,
-                        "ssh": {
-                            "publicKeys": [
-                                {
-                                    "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
-                                    "keyData": "[parameters('adminPublicKey')]"
-                                }
-                            ]
-                        }
+                        "disablePasswordAuthentication": false
                     }
                 },
                 "diagnosticsProfile": {
@@ -797,32 +789,24 @@
             }
         },
         {
-            "name": "install-edx",
-            "apiVersion": "2015-01-01",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "incremental",
-                "templateLink": {
-                    "uri": "https://catalogartifact.azureedge.net/publicartifactsmigration/microsoft.custom-script-linux-arm.2.0.56/Artifacts/MainTemplate.json"
-                },
-                "parameters": {
-                    "vmName": {
-                        "value": "[variables('virtualMachineName')]"
-                    },
-                    "location": {
-                        "value": "[resourceGroup().location]"
-                    },
-                    "fileUris": {
-                        "value": []
-                    },
-                    "commandToExecute": {
-                        "value": "[concat('wget https://raw.githubusercontent.com/', parameters('installerGithubAccountName'), '/', parameters('installerGithubProjectName'), '/', parameters('installerGithubBranch'), '/utils/install/install-openedx.sh && sudo -H bash install-openedx.sh --edxconfiguration-public-github-accountname ', parameters('edxConfigurationGithubAccountName'), ' --edxconfiguration-public-github-projectname ', parameters('edxConfigurationGithubProjectName'), ' --edxconfiguration-public-github-projectbranch ', parameters('edxConfigurationGithubBranch'), ' --installer-github-accountname ', parameters('installerGithubAccountName'), ' --installer-github-projectname ', parameters('installerGithubProjectName'), ' --installer-github-projectbranch ', parameters('installerGithubBranch'), '')]"
-                    }
-                }
-            },
+            "name": "[concat(variables('virtualMachineName'), '/install-edx')]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-07-01",
+            "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[concat('Microsoft.Compute/virtualMachines/', variables('virtualMachineName'))]"
-            ]
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "forceUpdateTag": "[deployment().name]",
+                "settings": {},
+                "protectedSettings": {
+                    "commandToExecute": "[concat('bash -c \"set -euxo pipefail; export OPENEDX_RELEASE=', parameters('edxConfigurationGithubBranch'), '; workdir=/home/', parameters('adminUsername'), '/openedx-install; mkdir -p $workdir; cd $workdir; printf %b ''EDXAPP_PLATFORM_NAME: ICEI\\nEDXAPP_LMS_BASE: ', variables('lmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_CMS_BASE: ', variables('cmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_SITE_NAME: {{ EDXAPP_LMS_BASE }}\\nEDXAPP_LMS_SITE_NAME: {{ EDXAPP_LMS_BASE }}\\nEDXAPP_CMS_SITE_NAME: {{ EDXAPP_CMS_BASE }}\\nEDXAPP_TECH_SUPPORT_EMAIL: support@example.com\\nEDXAPP_CONTACT_EMAIL: support@example.com\\nEDXAPP_BUGS_EMAIL: support@example.com\\nEDXAPP_DEFAULT_FROM_EMAIL: support@example.com\\nEDXAPP_DEFAULT_FEEDBACK_EMAIL: support@example.com\\nEDXAPP_DEFAULT_SERVER_EMAIL: support@example.com\\nEDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: support@example.com\\nEDXAPP_UNIVERSITY_EMAIL: support@example.com\\nEDXAPP_PRESS_EMAIL: support@example.com\\nEDXAPP_PAYMENT_SUPPORT_EMAIL: support@example.com\\n'' > config.yml; wget -O - https://raw.githubusercontent.com/', parameters('edxConfigurationGithubAccountName'), '/', parameters('edxConfigurationGithubProjectName'), '/', parameters('edxConfigurationGithubBranch'), '/util/install/generate-passwords.sh | bash; wget -O - https://raw.githubusercontent.com/', parameters('edxConfigurationGithubAccountName'), '/', parameters('edxConfigurationGithubProjectName'), '/', parameters('edxConfigurationGithubBranch'), '/util/install/native.sh | bash 2>&1 | tee install.out\"')]"
+                }
+            }
         }
     ],
     "outputs": {

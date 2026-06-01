@@ -17,8 +17,9 @@ This project contains an **ARM Template** and some scripts used to deploy **Open
 
 ## Deploy via PowerShell
 
-1. **Update config.yml for your configuration**
-2. **Run Deploy-ARM.ps1 in PowerShell**
+1. **Update `utils/install/config/config.yml` for your LMS/CMS domain configuration**
+2. **Copy `templates/stamp/parameters.azure.example.json` to `templates/stamp/parameters.local.json` and update the values**
+3. **Run Deploy-ARM.ps1 in PowerShell**
 
         &"<Deply-ARM directory>\Deploy-ARM.ps1" `
             -AzureSubscriptionName "<Azure Subscription Name>" `
@@ -27,12 +28,13 @@ This project contains an **ARM Template** and some scripts used to deploy **Open
             -AadWebClientId "<AAD Client ID>" `
             -AadWebClientAppKey "<AAD Client Key>" `
             -AadTenantId "<AAD Tenant ID>" `
+            -ParameterFile "<Parameters File Path>" `
             -FullDeploymentArmTemplateFile "<ARM Template File Path>" `
             -clusterName "<root name or resources>" `
             -virtualMachineSize "<Virtual Machine Size>" `
             -diskSize <Disk Size> `
             -adminUsername "<VM Username>" `
-            -adminPublicKey "<VM Public Key>" `
+            -adminPassword "<VM Password>" `
             -installerGithubAccountName "<Installer Github account name>" `
             -installerGithubProjectName "<Installer Github project name>" `
             -installerGithubBranch "<Installer Github branch>" `
@@ -48,18 +50,21 @@ This project contains an **ARM Template** and some scripts used to deploy **Open
 |`-AadWebClientId`                      |string |true       |                               |
 |`-AadWebClientAppKey`                  |string |true       |                               |
 |`-AadTenantId`                         |string |true       |                               |
-|`-FullDeploymentArmTemplateFile`       |string |true       |                               |
-|`-clusterName`                         |string |false      |enialrash                      |
+|`-FullDeploymentArmTemplateFile`       |string |false      |templates/stamp/template.json  |
+|`-ParameterFile`                       |string |false      |templates/stamp/parameters.json|
+|`-clusterName`                         |string |false      |enialrahs                      |
 |`-virtualMachineSize`                  |string |false      |Standard_D3_v2                 |
 |`-diskSize`                            |int    |false      |50                             |
-|`-adminUsername`                       |string |true       |enialrash                      |
-|`-adminPublicKey`                      |string |true       |                               |
-|`-installerGithubAccountName`          |string |false      |enialrahs                      |
-|`-installerGithubProjectName`          |string |false      |open-release/koa.master        |
-|`-installerGithubBranch`               |string |false      |enialrahs                      |
+|`-adminUsername`                       |string |true       |azureuser                      |
+|`-adminPassword`                       |string |true       |                               |
+|`-installerGithubAccountName`          |string |false      |onecliquezone                  |
+|`-installerGithubProjectName`          |string |false      |enialrahs                      |
+|`-installerGithubBranch`               |string |false      |master                         |
 |`-edxConfigurationGithubAccountName`   |string |false      |onecliquezone                  |
 |`-edxConfigurationGithubProjectName`   |string |false      |configuration                  |
 |`-edxConfigurationGithubBranch`        |string |false      |open-release/koa.master        |
+
+See the Indonesian Azure install guide in [docs/azure-install.md](./docs/azure-install.md).
 
 **Check out Azure Virtual Machines Sizes [here][vmsizes].**
 
