@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "clusterName": {
-            "value": "enialrahs"
+            "value": "edxicei"
         },
         "location": {
             "value": "southeastasia" 
@@ -27,7 +27,7 @@
             "value": "configuration"
         },
         "installerGithubBranch": {
-            "value": "open-release/koa.master"
+            "value": "open-release/lilac.master"
         },
         "edxConfigurationGithubAccountName": {
             "value": "edx"
@@ -36,7 +36,7 @@
             "value": "configuration"
         },
         "edxConfigurationGithubBranch": {
-            "value": "open-release/koa.master"
+            "value": "open-release/lilac.master"
         }
     }
 }

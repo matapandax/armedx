@@ -12,7 +12,7 @@
             "value": "Standard_D3_v2"
         },
         "diskSize": {
-            "value": 80
+            "value": 100
         },
         "adminUsername": {
             "value": "azureuser"
@@ -21,22 +21,22 @@
             "value": "ChangeMe-Use-A-Strong-Password-123!"
         },
         "installerGithubAccountName": {
-            "value": "edx"
+            "value": "openedx-unsupported"
         },
         "installerGithubProjectName": {
             "value": "configuration"
         },
         "installerGithubBranch": {
-            "value": "open-release/lilac.master"
+            "value": "open-release/koa.master"
         },
         "edxConfigurationGithubAccountName": {
-            "value": "edx"
+            "value": "openedx-unsupported"
         },
         "edxConfigurationGithubProjectName": {
             "value": "configuration"
         },
         "edxConfigurationGithubBranch": {
-            "value": "open-release/lilac.master"
+            "value": "open-release/koa.master"
         }
     }
 }

@@ -4,21 +4,21 @@
     "parameters": {
         "location": {
             "type": "string",
-            "defaultValue":"[resourceGroup().location]",
+            "defaultValue": "[resourceGroup().location]",
             "metadata": {
-                "description":"Location of all resources."
+                "description": "Location of all resources."
             }
         },
         "clusterName": {
             "type": "string",
-            "defaultValue":"edxicei",
+            "defaultValue": "edxicei",
             "metadata": {
                 "description": "Cluster of resources root name"
             }
         },
         "virtualMachineSize": {
             "type": "string",
-            "defaultValue": "Standard_D2s_v3",
+            "defaultValue": "Standard_D3_v2",
             "allowedValues": [
                 "Standard_D1_v2",
                 "Standard_D2_v2",
@@ -38,30 +38,30 @@
         },
         "adminUsername": {
             "type": "string",
-            "defaultValue": "enialrash",
+            "defaultValue": "azureuser",
             "metadata": {
                 "description": "Administrator username."
             }
         },
         "adminPassword": {
             "type": "securestring",
-            "defaultValue":"",
+            "defaultValue": "",
             "metadata": {
                 "description": "Password for the Virtual Machine administrator account."
             }
         },
         "diskSize": {
             "type": "int",
-            "defaultValue":50,
-            "metadata":{
-                "descrption":"Size of Virtual Machine Disk"
+            "defaultValue": 100,
+            "metadata": {
+                "descrption": "Size of Virtual Machine Disk"
             }
         },
         "installerGithubAccountName": {
             "type": "string",
-            "defaultValue": "edx",
+            "defaultValue": "openedx-unsupported",
             "metadata": {
-                "description": "Legacy parameter. Native install uses edxConfigurationGithubAccountName."
+                "description": "Legacy-compatible account value for Koa native. Keep openedx-unsupported."
             }
         },
         "installerGithubProjectName": {
@@ -73,38 +73,36 @@
         },
         "installerGithubBranch": {
             "type": "string",
-            "defaultValue": "open-release/lilac.master",
+            "defaultValue": "open-release/koa.master",
             "metadata": {
-                "description": "Legacy parameter. Native install uses edxConfigurationGithubBranch."
+                "description": "Koa native branch. Keep open-release/koa.master for openedx-unsupported/configuration."
             }
         },
         "edxConfigurationGithubAccountName": {
             "type": "string",
-            "defaultValue": "edx",
+            "defaultValue": "openedx-unsupported",
             "metadata": {
-                "description": "Open EdX configuration Github account name."
+                "description": "Configuration GitHub account for Koa native. Keep openedx-unsupported."
             }
         },
         "edxConfigurationGithubProjectName": {
             "type": "string",
             "defaultValue": "configuration",
             "metadata": {
-                "description": "Open EdX configuration Github project name."
+                "description": "Open edX unsupported configuration Github project name."
             }
         },
         "edxConfigurationGithubBranch": {
             "type": "string",
-            "defaultValue": "open-release/lilac.master",
+            "defaultValue": "open-release/koa.master",
             "metadata": {
-                "description": "Open EdX configuration Github branch."
+                "description": "Koa native branch from openedx-unsupported/configuration. Keep open-release/koa.master."
             }
         }
     },
     "variables": {
         "clusterName": "[toLower(parameters('clusterName'))]",
-        
         "networkInterfaceName": "[concat(variables('clusterName'), '-nic')]",
-
         "networkSecurityGroupName": "[concat(variables('clusterName'), '-nsg')]",
         "networkSecurityRules": [
             {
@@ -295,7 +293,6 @@
                 }
             }
         ],
-        
         "subnetName": "default",
         "virtualNetworkName": "[concat(variables('clusterName'), '-vnet')]",
         "addressPrefix": "10.0.0.0/16",
@@ -308,14 +305,11 @@
                 }
             }
         ],
-
         "publicIpAddressName": "[concat(variables('clusterName'), '-vm-ip')]",
         "publicIpAddressType": "Dynamic",
         "publicIpAddressSku": "Basic",
-
         "virtualMachineName": "[concat(variables('clusterName'), '-vm')]",
         "virtualMachineComputerName": "[variables('clusterName')]",
-
         "diskNameSalt": "20201207080015",
         "storageAccountNamePrefix": "[take(replace(variables('clusterName'), '-', ''), 7)]",
         "storageAccountNameSuffix": "[uniqueString(resourceGroup().id, variables('clusterName'))]",
@@ -323,13 +317,10 @@
         "diagnosticsStorageAccountName": "[concat(variables('storageAccountNamePrefix'), variables('storageAccountNameSuffix'), 'diag')]",
         "storageAccountType": "Standard_LRS",
         "storageAccountKind": "Storage",
-        
         "networkSecurityGroupId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
         "virtualNetworkId": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
         "subnetReference": "[concat(variables('virtualNetworkId'), '/subnets/', variables('subnetName'))]",
-
         "storageContainerUri": "[concat(concat('https://', variables('diskStorageAccountName'), '.blob.core.windows.net/'), 'vhds/')]",
-        
         "loadBalancerName": "[concat(variables('clusterName'), '-lb')]",
         "backEndPoolName": "[concat(variables('clusterName'), '-bepool')]",
         "cmsPublicIpAddressName": "[concat(variables('clusterName'), '-cms-ip')]",
@@ -344,7 +335,7 @@
         "lbRulesCMSSSLName": "LBRuleCMS_SSL",
         "lbRulesLMSName": "LBRuleLMS",
         "lbRulesLMSSSLName": "LBRuleLMS_SSL",
-        "loadBalancingRules":[
+        "loadBalancingRules": [
             {
                 "name": "[variables('lbRulesCMSName')]",
                 "properties": {
@@ -430,7 +421,7 @@
                 }
             }
         ],
-        "probes":[
+        "probes": [
             {
                 "name": "[variables('tcpProbeCMSName')]",
                 "properties": {
@@ -470,11 +461,10 @@
                 }
             }
         ],
-
-        "cmsTrafficManagerName":"[concat(variables('clusterName'), '-cms-tm')]",
-        "lmsTrafficManagerName":"[concat(variables('clusterName'), '-lms-tm')]"
+        "cmsTrafficManagerName": "[concat(variables('clusterName'), '-cms-tm')]",
+        "lmsTrafficManagerName": "[concat(variables('clusterName'), '-lms-tm')]"
     },
-    "resources":[
+    "resources": [
         {
             "name": "[variables('networkInterfaceName')]",
             "type": "Microsoft.Network/networkInterfaces",
@@ -551,7 +541,6 @@
                 "inboundNatRules": [],
                 "loadBalancingRules": "[variables('loadBalancingRules')]",
                 "probes": "[variables('probes')]"
-                
             }
         },
         {
@@ -592,8 +581,7 @@
             "name": "[variables('lmsTrafficManagerName')]",
             "type": "Microsoft.Network/trafficManagerProfiles",
             "apiVersion": "2018-04-01",
-            "tags": {
-            },
+            "tags": {},
             "location": "global",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', variables('lmsPublicIpAddressName'))]"
@@ -617,9 +605,9 @@
                     {
                         "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', variables('lmsTrafficManagerName')), '/externalEndpoints/endpoint')]",
                         "name": "endpoint",
-                            "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
-                            "properties": {
-                                "endpointStatus": "Enabled",
+                        "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
+                        "properties": {
+                            "endpointStatus": "Enabled",
                             "target": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('lmsPublicIpAddressName')), '2019-02-01').dnsSettings.fqdn]",
                             "weight": 1,
                             "priority": 1
@@ -634,8 +622,7 @@
             "name": "[variables('cmsTrafficManagerName')]",
             "type": "Microsoft.Network/trafficManagerProfiles",
             "apiVersion": "2018-04-01",
-            "tags": {
-            },
+            "tags": {},
             "location": "global",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/publicIPAddresses', variables('cmsPublicIpAddressName'))]"
@@ -659,9 +646,9 @@
                     {
                         "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', variables('cmsTrafficManagerName')), '/externalEndpoints/endpoint')]",
                         "name": "endpoint",
-                            "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
-                            "properties": {
-                                "endpointStatus": "Enabled",
+                        "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
+                        "properties": {
+                            "endpointStatus": "Enabled",
                             "target": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('cmsPublicIpAddressName')), '2019-02-01').dnsSettings.fqdn]",
                             "weight": 1,
                             "priority": 1
@@ -804,7 +791,7 @@
                 "forceUpdateTag": "[deployment().name]",
                 "settings": {},
                 "protectedSettings": {
-                    "commandToExecute": "[concat('bash -c \"set -euxo pipefail; export DEBIAN_FRONTEND=noninteractive; export OPENEDX_RELEASE=', parameters('edxConfigurationGithubBranch'), '; if command -v cloud-init >/dev/null 2>&1; then sudo cloud-init status --wait || true; fi; while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do sleep 10; done; sudo mkdir -p /var/lib/apt/lists/partial; sudo rm -rf /var/lib/apt/lists/*; sudo mkdir -p /var/lib/apt/lists/partial; for attempt in 1 2 3 4 5; do sudo apt-get update -y && break || sleep 20; done; sudo apt-get install -y locales wget curl git; sudo locale-gen en_US.UTF-8; sudo update-locale LANG=en_US.UTF-8; export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8; export LC_CTYPE=en_US.UTF-8; mkdir -p /home/', parameters('adminUsername'), '/openedx-install; cd /home/', parameters('adminUsername'), '/openedx-install; printf %b ''EDXAPP_PLATFORM_NAME: ICEI\\nEDXAPP_LMS_BASE: ', variables('lmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_CMS_BASE: ', variables('cmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_SITE_NAME: ', variables('lmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_LMS_SITE_NAME: ', variables('lmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_CMS_SITE_NAME: ', variables('cmsTrafficManagerName'), '.trafficmanager.net\\ncommon_debian_pkgs:\\n  - apt-transport-https\\n  - ntp\\n  - acl\\n  - iotop\\n  - lynx\\n  - logrotate\\n  - rsyslog\\n  - git\\n  - unzip\\n  - net-tools\\n  - python3-pip\\n  - python3-dev\\n  - python3.8-dev\\nEDXAPP_TECH_SUPPORT_EMAIL: support@example.com\\nEDXAPP_CONTACT_EMAIL: support@example.com\\nEDXAPP_BUGS_EMAIL: support@example.com\\nEDXAPP_DEFAULT_FROM_EMAIL: support@example.com\\nEDXAPP_DEFAULT_FEEDBACK_EMAIL: support@example.com\\nEDXAPP_DEFAULT_SERVER_EMAIL: support@example.com\\nEDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: support@example.com\\nEDXAPP_UNIVERSITY_EMAIL: support@example.com\\nEDXAPP_PRESS_EMAIL: support@example.com\\nEDXAPP_PAYMENT_SUPPORT_EMAIL: support@example.com\\n'' > config.yml; wget -O - https://raw.githubusercontent.com/', parameters('edxConfigurationGithubAccountName'), '/', parameters('edxConfigurationGithubProjectName'), '/', parameters('edxConfigurationGithubBranch'), '/util/install/ansible-bootstrap.sh | sudo -E bash; wget -O - https://raw.githubusercontent.com/', parameters('edxConfigurationGithubAccountName'), '/', parameters('edxConfigurationGithubProjectName'), '/', parameters('edxConfigurationGithubBranch'), '/util/install/generate-passwords.sh | bash; wget -O - https://raw.githubusercontent.com/', parameters('edxConfigurationGithubAccountName'), '/', parameters('edxConfigurationGithubProjectName'), '/', parameters('edxConfigurationGithubBranch'), '/util/install/native.sh | bash 2>&1 | tee install.out\"')]"
+                    "commandToExecute": "[concat('bash -c \"set -euxo pipefail; export DEBIAN_FRONTEND=noninteractive; export OPENEDX_RELEASE=', parameters('edxConfigurationGithubBranch'), '; if command -v cloud-init >/dev/null 2>&1; then sudo cloud-init status --wait || true; fi; while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do sleep 10; done; sudo mkdir -p /var/lib/apt/lists/partial; sudo rm -rf /var/lib/apt/lists/*; sudo mkdir -p /var/lib/apt/lists/partial; for attempt in 1 2 3 4 5; do sudo apt-get update -y && break || sleep 20; done; sudo apt-get install -y locales wget curl git ca-certificates python3 python3-pip python3-dev python3.8-dev build-essential software-properties-common; sudo locale-gen en_US.UTF-8; sudo update-locale LANG=en_US.UTF-8; export LANG=en_US.UTF-8; export LC_ALL=en_US.UTF-8; export LC_CTYPE=en_US.UTF-8; mkdir -p /home/', parameters('adminUsername'), '/openedx-install; cd /home/', parameters('adminUsername'), '/openedx-install; printf %b ''EDXAPP_PLATFORM_NAME: ICEI\\nEDXAPP_LMS_BASE: ', variables('lmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_CMS_BASE: ', variables('cmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_SITE_NAME: ', variables('lmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_LMS_SITE_NAME: ', variables('lmsTrafficManagerName'), '.trafficmanager.net\\nEDXAPP_CMS_SITE_NAME: ', variables('cmsTrafficManagerName'), '.trafficmanager.net\\ncommon_debian_pkgs:\\n  - apt-transport-https\\n  - ntp\\n  - acl\\n  - iotop\\n  - lynx\\n  - logrotate\\n  - rsyslog\\n  - git\\n  - unzip\\n  - net-tools\\n  - python3-pip\\n  - python3-dev\\n  - python3.8-dev\\nEDXAPP_TECH_SUPPORT_EMAIL: support@example.com\\nEDXAPP_CONTACT_EMAIL: support@example.com\\nEDXAPP_BUGS_EMAIL: support@example.com\\nEDXAPP_DEFAULT_FROM_EMAIL: support@example.com\\nEDXAPP_DEFAULT_FEEDBACK_EMAIL: support@example.com\\nEDXAPP_DEFAULT_SERVER_EMAIL: support@example.com\\nEDXAPP_BULK_EMAIL_DEFAULT_FROM_EMAIL: support@example.com\\nEDXAPP_UNIVERSITY_EMAIL: support@example.com\\nEDXAPP_PRESS_EMAIL: support@example.com\\nEDXAPP_PAYMENT_SUPPORT_EMAIL: support@example.com\\n'' > config.yml; wget -O - https://raw.githubusercontent.com/', parameters('edxConfigurationGithubAccountName'), '/', parameters('edxConfigurationGithubProjectName'), '/', parameters('edxConfigurationGithubBranch'), '/util/install/ansible-bootstrap.sh | sudo -E bash; wget -O - https://raw.githubusercontent.com/', parameters('edxConfigurationGithubAccountName'), '/', parameters('edxConfigurationGithubProjectName'), '/', parameters('edxConfigurationGithubBranch'), '/util/install/generate-passwords.sh | bash; wget https://raw.githubusercontent.com/', parameters('edxConfigurationGithubAccountName'), '/', parameters('edxConfigurationGithubProjectName'), '/', parameters('edxConfigurationGithubBranch'), '/util/install/native.sh -O native.sh; perl -0pi -e ''s#git clone https://github.com/edx/configuration#git clone https://github.com/openedx-unsupported/configuration#'' native.sh; perl -0pi -e ''s#git checkout \\$CONFIGURATION_VERSION\\ngit pull#git checkout \\$CONFIGURATION_VERSION\\ngit pull\\nsudo sed -i -e \"s/^numpy==.*/numpy==1.19.5/\" -e \"s/^scipy==.*/scipy==1.5.4/\" requirements/edx-sandbox/py35.txt#'' native.sh; bash native.sh 2>&1 | tee install.out\"')]"
                 }
             }
         }

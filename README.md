@@ -52,19 +52,21 @@ This project contains an **ARM Template** and some scripts used to deploy **Open
 |`-AadTenantId`                         |string |true       |                               |
 |`-FullDeploymentArmTemplateFile`       |string |false      |templates/stamp/template.json  |
 |`-ParameterFile`                       |string |false      |templates/stamp/parameters.json|
-|`-clusterName`                         |string |false      |enialrahs                      |
+|`-clusterName`                         |string |false      |edxicei                        |
 |`-virtualMachineSize`                  |string |false      |Standard_D3_v2                 |
 |`-diskSize`                            |int    |false      |50                             |
 |`-adminUsername`                       |string |true       |azureuser                      |
 |`-adminPassword`                       |string |true       |                               |
-|`-installerGithubAccountName`          |string |false      |onecliquezone                  |
-|`-installerGithubProjectName`          |string |false      |enialrahs                      |
-|`-installerGithubBranch`               |string |false      |master                         |
-|`-edxConfigurationGithubAccountName`   |string |false      |onecliquezone                  |
+|`-installerGithubAccountName`          |string |false      |edx                            |
+|`-installerGithubProjectName`          |string |false      |configuration                  |
+|`-installerGithubBranch`               |string |false      |open-release/lilac.master      |
+|`-edxConfigurationGithubAccountName`   |string |false      |edx                            |
 |`-edxConfigurationGithubProjectName`   |string |false      |configuration                  |
-|`-edxConfigurationGithubBranch`        |string |false      |open-release/koa.master        |
+|`-edxConfigurationGithubBranch`        |string |false      |open-release/lilac.master      |
 
 See the Indonesian Azure install guide in [docs/azure-install.md](./docs/azure-install.md).
+For native Koa (`open-release/koa.master`), use [docs/azure-openedx-koa.md](./docs/azure-openedx-koa.md).
+For SSH clone based native Koa, use [docs/architecture-ssh-koa.md](./docs/architecture-ssh-koa.md).
 
 **Check out Azure Virtual Machines Sizes [here][vmsizes].**
 

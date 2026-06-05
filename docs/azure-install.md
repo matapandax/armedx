@@ -8,7 +8,7 @@ Salin `templates/stamp/parameters.azure.example.json` menjadi `templates/stamp/p
 
 Nilai penting yang perlu diganti:
 
-- `clusterName`: awalan nama resource Azure. Gunakan huruf kecil dan angka saja, contoh `enialrahsprod`.
+- `clusterName`: awalan nama resource Azure. Gunakan huruf kecil dan angka saja, contoh `edxicei`.
 - `location`: region Azure, contoh `southeastasia`, `eastus`, atau `westus2`.
 - `virtualMachineSize`: ukuran VM. Default contoh memakai `Standard_D3_v2`.
 - `diskSize`: ukuran OS disk dalam GB. Untuk Open edX, 80 GB lebih aman daripada 50 GB.
@@ -37,7 +37,7 @@ Login memakai service principal:
   -AadWebClientAppKey "<Client Secret>" `
   -AadTenantId "<Tenant ID>" `
   -ParameterFile ".\templates\stamp\parameters.local.json" `
-  -clusterName "enialrahsprod" `
+  -clusterName "edxicei" `
   -virtualMachineSize "Standard_D3_v2" `
   -diskSize 80 `
   -adminUsername "azureuser" `
