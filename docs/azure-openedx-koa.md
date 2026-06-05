@@ -37,7 +37,7 @@ Nilai penting yang perlu diganti:
 - `virtualMachineSize`: gunakan minimal `Standard_D3_v2`.
 - `diskSize`: disarankan minimal 100 GB.
 - `adminUsername`: user SSH VM.
-- `adminPassword`: password SSH yang kuat.
+- `adminPassword`: password SSH yang kuat, 6-72 karakter dan minimal 3 jenis karakter dari huruf besar, huruf kecil, angka, dan simbol. Contoh format: `AzureEdx2026!`.
 - `installerGithubAccountName`: biarkan `matapandax`.
 - `installerGithubProjectName`: biarkan `enialrahs`.
 - `installerGithubBranch`: biarkan `master`.

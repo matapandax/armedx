@@ -13,7 +13,7 @@ Nilai penting yang perlu diganti:
 - `virtualMachineSize`: ukuran VM. Default contoh memakai `Standard_D3_v2`.
 - `diskSize`: ukuran OS disk dalam GB. Untuk Open edX, 80 GB lebih aman daripada 50 GB.
 - `adminUsername`: user SSH VM.
-- `adminPassword`: password untuk login SSH ke VM. Gunakan password kuat, minimal 12 karakter dengan huruf besar, huruf kecil, angka, dan simbol.
+- `adminPassword`: password untuk login SSH ke VM. Gunakan 6-72 karakter dan minimal 3 jenis karakter dari huruf besar, huruf kecil, angka, dan simbol. Contoh format: `AzureEdx2026!`.
 - `installerGithubAccountName`, `installerGithubProjectName`, `installerGithubBranch`: repo yang berisi script `utils/install/install-openedx.sh`.
 - `edxConfigurationGithubAccountName`, `edxConfigurationGithubProjectName`, `edxConfigurationGithubBranch`: repo konfigurasi Open edX.
 

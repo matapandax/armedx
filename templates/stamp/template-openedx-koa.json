@@ -45,9 +45,10 @@
         },
         "adminPassword": {
             "type": "securestring",
-            "defaultValue": "",
+            "minLength": 6,
+            "maxLength": 72,
             "metadata": {
-                "description": "Password for the Virtual Machine administrator account."
+                "description": "Password for the Virtual Machine administrator account. Must satisfy Azure password complexity rules."
             }
         },
         "diskSize": {
