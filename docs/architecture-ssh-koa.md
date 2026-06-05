@@ -16,7 +16,7 @@ Azure Resource Group
 SSH VM
   -> git clone repo enialrahs
   -> ./utils/install/install-openedx-koa-ssh.sh
-  -> openedx-unsupported/configuration open-release/koa.master
+  -> openedx-unsupported/configuration open-release/koa.3
   -> /var/tmp/configuration
   -> /edx service stack
 ```
@@ -24,12 +24,12 @@ SSH VM
 ## Sumber Koa
 
 - Configuration repo: `https://github.com/openedx-unsupported/configuration`
-- Branch: `open-release/koa.master`
+- Release ref/tag: `open-release/koa.3`
 - Installer lokal: `utils/install/install-openedx-koa-ssh.sh`
 - Working directory di VM: `~/openedx-koa-install`
 - Log utama: `~/openedx-koa-install/install.out`
 
-Script installer tetap mengambil `util/install/native.sh` dari branch Koa tersebut, lalu patch clone internalnya agar memakai `openedx-unsupported/configuration`. Script juga patch dependency sandbox Koa ke:
+Script installer tetap mengambil `util/install/native.sh` dari branch Koa tersebut, lalu patch clone internalnya agar memakai `openedx-unsupported/configuration`. Script juga patch `ansible-bootstrap.sh` agar tidak memakai `python3.5-dev` di Ubuntu 20.04, dan patch dependency sandbox Koa ke:
 
 - `numpy==1.19.5`
 - `scipy==1.5.4`
@@ -80,10 +80,10 @@ git status
 git branch --show-current
 ```
 
-Branch yang benar harus:
+Ref yang benar harus:
 
 ```text
-open-release/koa.master
+open-release/koa.3
 ```
 
 ## Catatan Operasional

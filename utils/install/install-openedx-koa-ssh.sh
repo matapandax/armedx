@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-OPENEDX_RELEASE="${OPENEDX_RELEASE:-open-release/koa.master}"
+OPENEDX_RELEASE="${OPENEDX_RELEASE:-open-release/koa.3}"
 CONFIG_REPO="${CONFIG_REPO:-https://github.com/openedx-unsupported/configuration}"
 CONFIG_RAW_BASE="${CONFIG_RAW_BASE:-https://raw.githubusercontent.com/openedx-unsupported/configuration/${OPENEDX_RELEASE}}"
 INSTALL_DIR="${INSTALL_DIR:-${HOME}/openedx-koa-install}"
@@ -19,7 +19,7 @@ Required:
   --cms-host <host>    Studio/CMS hostname, for example studio.example.com
 
 Optional env vars:
-  OPENEDX_RELEASE      Default: open-release/koa.master
+  OPENEDX_RELEASE      Default: open-release/koa.3
   CONFIG_REPO          Default: https://github.com/openedx-unsupported/configuration
   INSTALL_DIR          Default: ~/openedx-koa-install
   PLATFORM_NAME        Default: ICEI
@@ -112,7 +112,9 @@ EDXAPP_PRESS_EMAIL: ${SUPPORT_EMAIL}
 EDXAPP_PAYMENT_SUPPORT_EMAIL: ${SUPPORT_EMAIL}
 EOF
 
-wget -O - "${CONFIG_RAW_BASE}/util/install/ansible-bootstrap.sh" | sudo -E bash
+wget -O ansible-bootstrap.sh "${CONFIG_RAW_BASE}/util/install/ansible-bootstrap.sh"
+perl -0pi -e 's/python3\.5-dev/python3.8-dev/g; s/python3\.5/python3/g' ansible-bootstrap.sh
+sudo -E bash ansible-bootstrap.sh
 wget -O - "${CONFIG_RAW_BASE}/util/install/generate-passwords.sh" | bash
 wget -O native.sh "${CONFIG_RAW_BASE}/util/install/native.sh"
 

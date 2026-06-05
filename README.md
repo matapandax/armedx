@@ -65,7 +65,7 @@ This project contains an **ARM Template** and some scripts used to deploy **Open
 |`-edxConfigurationGithubBranch`        |string |false      |open-release/lilac.master      |
 
 See the Indonesian Azure install guide in [docs/azure-install.md](./docs/azure-install.md).
-For native Koa (`open-release/koa.master`), use [docs/azure-openedx-koa.md](./docs/azure-openedx-koa.md).
+For native Koa (`open-release/koa.3`), use [docs/azure-openedx-koa.md](./docs/azure-openedx-koa.md).
 For SSH clone based native Koa, use [docs/architecture-ssh-koa.md](./docs/architecture-ssh-koa.md).
 
 **Check out Azure Virtual Machines Sizes [here][vmsizes].**

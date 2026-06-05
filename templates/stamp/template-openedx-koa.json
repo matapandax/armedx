@@ -95,9 +95,9 @@
         },
         "edxConfigurationGithubBranch": {
             "type": "string",
-            "defaultValue": "open-release/koa.master",
+            "defaultValue": "open-release/koa.3",
             "metadata": {
-                "description": "Koa native branch from openedx-unsupported/configuration. Keep open-release/koa.master."
+                "description": "Koa native release ref/tag from openedx-unsupported/configuration. Keep open-release/koa.3."
             }
         }
     },

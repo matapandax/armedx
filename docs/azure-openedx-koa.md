@@ -11,15 +11,15 @@ Template ini tidak lagi menyimpan logic `native.sh` panjang di dalam ARM. Saat V
 2. Clone repo deploy ini dari `https://github.com/matapandax/enialrahs.git`.
 3. Jalankan `utils/install/install-openedx-koa-ssh.sh` dari repo hasil clone.
 
-Script lokal itulah yang mengambil `openedx-unsupported/configuration` branch `open-release/koa.master`, menjalankan `util/install/native.sh`, lalu patch dependency lama Koa untuk Python 3.8:
+Script lokal itulah yang mengambil `openedx-unsupported/configuration` release ref/tag `open-release/koa.3`, menjalankan `util/install/native.sh`, lalu patch dependency lama Koa untuk Python 3.8:
 
 - `numpy==1.19.5`
 - `scipy==1.5.4`
 
-Branch Koa yang dipakai adalah branch remote yang benar:
+Ref Koa yang dipakai adalah tag remote yang benar:
 
 ```text
-openedx-unsupported/configuration -> refs/heads/open-release/koa.master
+openedx-unsupported/configuration -> refs/tags/open-release/koa.3
 ```
 
 ## 1. Siapkan parameter
@@ -43,7 +43,7 @@ Nilai penting yang perlu diganti:
 - `installerGithubBranch`: biarkan `master`.
 - `edxConfigurationGithubAccountName`: biarkan `openedx-unsupported`.
 - `edxConfigurationGithubProjectName`: biarkan `configuration`.
-- `edxConfigurationGithubBranch`: biarkan `open-release/koa.master` untuk Koa native.
+- `edxConfigurationGithubBranch`: biarkan `open-release/koa.3` untuk Koa native.
 
 ## 2. Deploy
 
@@ -67,7 +67,7 @@ Nilai penting yang perlu diganti:
   -installerGithubBranch "master" `
   -edxConfigurationGithubAccountName "openedx-unsupported" `
   -edxConfigurationGithubProjectName "configuration" `
-  -edxConfigurationGithubBranch "open-release/koa.master"
+  -edxConfigurationGithubBranch "open-release/koa.3"
 ```
 
 ## 3. Cek proses install
