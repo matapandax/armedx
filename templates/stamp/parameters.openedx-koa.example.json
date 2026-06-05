@@ -21,13 +21,13 @@
             "value": "ChangeMe-Use-A-Strong-Password-123!"
         },
         "installerGithubAccountName": {
-            "value": "openedx-unsupported"
+            "value": "matapandax"
         },
         "installerGithubProjectName": {
-            "value": "configuration"
+            "value": "enialrahs"
         },
         "installerGithubBranch": {
-            "value": "open-release/koa.master"
+            "value": "master"
         },
         "edxConfigurationGithubAccountName": {
             "value": "openedx-unsupported"

@@ -5,14 +5,16 @@ Panduan ini memakai ARM template Koa native:
 - `templates/stamp/template-openedx-koa.json`
 - `templates/stamp/parameters.openedx-koa.example.json`
 
-Template ini memakai `openedx-unsupported/configuration` branch `open-release/koa.master` dan tetap menjalankan `util/install/native.sh`. Sebelum `native.sh` menjalankan Ansible, template menyisipkan dua patch:
+Template ini tidak lagi menyimpan logic `native.sh` panjang di dalam ARM. Saat VM selesai dibuat, Custom Script Extension hanya melakukan hal kecil ini:
 
-- clone internal di `native.sh` diarahkan dari `edx/configuration` ke `openedx-unsupported/configuration`.
-- dependency lama di `requirements/edx-sandbox/py35.txt` disesuaikan untuk Python 3.8:
+1. Install `git`.
+2. Clone repo deploy ini dari `https://github.com/matapandax/enialrahs.git`.
+3. Jalankan `utils/install/install-openedx-koa-ssh.sh` dari repo hasil clone.
+
+Script lokal itulah yang mengambil `openedx-unsupported/configuration` branch `open-release/koa.master`, menjalankan `util/install/native.sh`, lalu patch dependency lama Koa untuk Python 3.8:
+
 - `numpy==1.19.5`
 - `scipy==1.5.4`
-
-Patch dependency ini menggantikan pekerjaan manual yang biasanya muncul saat dependency lama Koa tidak cocok dengan Python 3.8 di Ubuntu 20.04. Akun GitHub `edx-requirements-bot` tidak dapat dipanggil langsung dari deployment ini, dan akun tersebut tidak menyediakan repo publik untuk dijadikan sumber konfigurasi.
 
 Branch Koa yang dipakai adalah branch remote yang benar:
 
@@ -36,6 +38,9 @@ Nilai penting yang perlu diganti:
 - `diskSize`: disarankan minimal 100 GB.
 - `adminUsername`: user SSH VM.
 - `adminPassword`: password SSH yang kuat.
+- `installerGithubAccountName`: biarkan `matapandax`.
+- `installerGithubProjectName`: biarkan `enialrahs`.
+- `installerGithubBranch`: biarkan `master`.
 - `edxConfigurationGithubAccountName`: biarkan `openedx-unsupported`.
 - `edxConfigurationGithubProjectName`: biarkan `configuration`.
 - `edxConfigurationGithubBranch`: biarkan `open-release/koa.master` untuk Koa native.
@@ -57,9 +62,9 @@ Nilai penting yang perlu diganti:
   -diskSize 100 `
   -adminUsername "azureuser" `
   -adminPassword "<password kuat untuk VM>" `
-  -installerGithubAccountName "openedx-unsupported" `
-  -installerGithubProjectName "configuration" `
-  -installerGithubBranch "open-release/koa.master" `
+  -installerGithubAccountName "matapandax" `
+  -installerGithubProjectName "enialrahs" `
+  -installerGithubBranch "master" `
   -edxConfigurationGithubAccountName "openedx-unsupported" `
   -edxConfigurationGithubProjectName "configuration" `
   -edxConfigurationGithubBranch "open-release/koa.master"
@@ -71,8 +76,7 @@ Setelah VM dibuat, login lewat SSH:
 
 ```bash
 ssh azureuser@<public-ip-vm>
-sudo su
-tail -f /home/azureuser/openedx-install/install.out
+tail -f /home/azureuser/openedx-koa-install/install.out
 ```
 
 URL default setelah selesai:
@@ -80,4 +84,4 @@ URL default setelah selesai:
 - LMS: `http://<clusterName>-lms-tm.trafficmanager.net`
 - Studio/CMS: `http://<clusterName>-cms-tm.trafficmanager.net`
 
-Koa adalah release lama. Jika install gagal, cek log terakhir di `/home/<adminUsername>/openedx-install/install.out` dan log Ansible di folder `/home/<adminUsername>/openedx-install/logs/`.
+Koa adalah release lama. Jika install gagal, cek log terakhir di `/home/<adminUsername>/openedx-koa-install/install.out` dan state Ansible di `/var/tmp/configuration`.
