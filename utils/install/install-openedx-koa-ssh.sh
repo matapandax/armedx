@@ -113,7 +113,7 @@ EDXAPP_PAYMENT_SUPPORT_EMAIL: ${SUPPORT_EMAIL}
 EOF
 
 wget -O ansible-bootstrap.sh "${CONFIG_RAW_BASE}/util/install/ansible-bootstrap.sh"
-perl -0pi -e 's/python3\.5-dev/python3.8-dev/g; s/python3\.5/python3/g' ansible-bootstrap.sh
+perl -0pi -e 's/PYTHON_VERSION="3\.5"/PYTHON_VERSION="3.8"/g; s/python3\.5-dev/python3.8-dev/g; s/python3\.5/python3.8/g' ansible-bootstrap.sh
 sudo -E bash ansible-bootstrap.sh
 wget -O - "${CONFIG_RAW_BASE}/util/install/generate-passwords.sh" | bash
 wget -O native.sh "${CONFIG_RAW_BASE}/util/install/native.sh"
