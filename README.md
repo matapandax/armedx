@@ -1,93 +1,206 @@
-# Open EdX Deployment on Azure
-This project contains an **ARM Template** and some scripts used to deploy **Open EdX** platform on Azure.
+# Open edX Quince Native on Azure
 
+Repository ini berisi template dan script untuk deploy **Open edX Quince native** di Azure dengan:
 
-#### Prerequisites :  
-- *PowerShell 5 and above*
-- *AZ Module*
+- Azure Load Balancer
+- LMS dan Studio/CMS terpisah
+- hostname MFE
+- installer SSH native berbasis `matapandax/configuration`
 
+Branch deployment yang dipakai VM:
 
-#### List of resources that will be deployed
-![Azure Resources](./docs/images/resources.png)
+```text
+quince-native-azure
+```
 
+Repo publik untuk clone di VM:
 
-#### ARM Template Visualization
-![Azure Resources](./docs/images/template_design.png)
+```text
+https://github.com/matapandax/armedx.git
+```
 
+## File Utama
 
-## Deploy via PowerShell
+ARM template:
 
-1. **Update `utils/install/config/config.yml` for your LMS/CMS domain configuration**
-2. **Copy `templates/stamp/parameters.azure.example.json` to `templates/stamp/parameters.local.json` and update the values**
-3. **Run Deploy-ARM.ps1 in PowerShell**
+```text
+templates/stamp/template-openedx-quince-native.json
+```
 
-        &"<Deply-ARM directory>\Deploy-ARM.ps1" `
-            -AzureSubscriptionName "<Azure Subscription Name>" `
-            -ResourceGroupName "<Resource Group>" `
-            -Location "<Location>" `
-            -AadWebClientId "<AAD Client ID>" `
-            -AadWebClientAppKey "<AAD Client Key>" `
-            -AadTenantId "<AAD Tenant ID>" `
-            -ParameterFile "<Parameters File Path>" `
-            -FullDeploymentArmTemplateFile "<ARM Template File Path>" `
-            -clusterName "<root name or resources>" `
-            -virtualMachineSize "<Virtual Machine Size>" `
-            -diskSize <Disk Size> `
-            -adminUsername "<VM Username>" `
-            -adminPassword "<VM Password>" `
-            -installerGithubAccountName "<Installer Github account name>" `
-            -installerGithubProjectName "<Installer Github project name>" `
-            -installerGithubBranch "<Installer Github branch>" `
-            -edxConfigurationGithubAccountName "<Configuration Github account name>" `
-            -edxConfigurationGithubProjectName "<Configuration Github project name>" `
-            -edxConfigurationGithubBranch "<Configuration Github branch>"
-**Deploy-ARM.ps1 Parameters**
-| Parameter name                        | Type  | Mandatory | Default Value                 |
-|---------------------------------------|-------|-----------|-------------------------------|
-|`-AzureSubscriptionName`               |string |true       |                               |
-|`-ResourceGroupName`                   |string |true       |enialrash                      |
-|`-Location`                            |string |true       |southeastasia                  |
-|`-AadWebClientId`                      |string |true       |                               |
-|`-AadWebClientAppKey`                  |string |true       |                               |
-|`-AadTenantId`                         |string |true       |                               |
-|`-FullDeploymentArmTemplateFile`       |string |false      |templates/stamp/template.json  |
-|`-ParameterFile`                       |string |false      |templates/stamp/parameters.json|
-|`-clusterName`                         |string |false      |edxicei                        |
-|`-virtualMachineSize`                  |string |false      |Standard_D3_v2                 |
-|`-diskSize`                            |int    |false      |50                             |
-|`-adminUsername`                       |string |true       |azureuser                      |
-|`-adminPassword`                       |string |true       |                               |
-|`-installerGithubAccountName`          |string |false      |edx                            |
-|`-installerGithubProjectName`          |string |false      |configuration                  |
-|`-installerGithubBranch`               |string |false      |open-release/lilac.master      |
-|`-edxConfigurationGithubAccountName`   |string |false      |edx                            |
-|`-edxConfigurationGithubProjectName`   |string |false      |configuration                  |
-|`-edxConfigurationGithubBranch`        |string |false      |open-release/lilac.master      |
+Contoh parameter:
 
-See the Indonesian Azure install guide in [docs/azure-install.md](./docs/azure-install.md).
-For native Koa (`open-release/koa.3`), use [docs/azure-openedx-koa.md](./docs/azure-openedx-koa.md).
-For SSH clone based native Koa, use [docs/architecture-ssh-koa.md](./docs/architecture-ssh-koa.md).
-For native Open edX Quince on Azure Load Balancer with LMS/CMS/MFE DNS, use [docs/architecture-openedx-quince-native-azure-lb-mfe.md](./docs/architecture-openedx-quince-native-azure-lb-mfe.md).
-The Quince native ARM entrypoints are `templates/stamp/template-openedx-quince-native.json` and `templates/stamp/parameters.openedx-quince-native.example.json`.
+```text
+templates/stamp/parameters.openedx-quince-native.example.json
+```
 
-**Check out Azure Virtual Machines Sizes [here][vmsizes].**
+Installer native via SSH:
 
-Deployment of azure resources takes a minute to complete. <br/>
-Open EdX installation takes almost 2 hours to finished. <br/>
-To check the status of installation
-1. Login to Virtual Machine via ssh
-2. Execute the following command
-   
-        sudo su
-        cd ~
-        tail -f install.out
-3. After the installation is finished check out the URL of CMS and LMS<br/>
-    >**CMS**: `http://<clustername>-cms-tm.trafficmanager.net`<br/>
-    >**LMS**: `http://<clustername>-lms-tm.trafficmanager.net`
+```text
+utils/install/install-openedx-quince-native-ssh.sh
+```
 
+Dokumentasi arsitektur:
 
+```text
+docs/architecture-openedx-quince-native-azure-lb-mfe.md
+```
 
-[//]: # (These are reference links)
+## Arsitektur Singkat
 
+Default hostname dari template:
 
-   [vmsizes]: <https://docs.microsoft.com/en-us/azure/virtual-machines/sizes-general?toc=/azure/virtual-machines/linux/toc.json&bc=/azure/virtual-machines/linux/breadcrumb/toc.json>
+```text
+LMS:
+http://edxquince-lms-tm.trafficmanager.net
+
+Studio/CMS:
+http://edxquince-cms-tm.trafficmanager.net
+
+MFE:
+http://edxquince-mfe-tm.trafficmanager.net
+```
+
+Port publik yang dibuka:
+
+```text
+22   SSH, batasi ke IP admin
+80   HTTP
+443  HTTPS
+```
+
+MFE tidak memakai Load Balancer rule terpisah. Host MFE diarahkan ke Public IP LMS dan dibedakan oleh host header/reverse proxy supaya tidak bentrok dengan aturan Azure Load Balancer untuk backend port `80/443`.
+
+## Deploy ARM dari PowerShell
+
+Salin parameter contoh:
+
+```powershell
+Copy-Item .\templates\stamp\parameters.openedx-quince-native.example.json .\templates\stamp\parameters.openedx-quince-native.local.json
+```
+
+Edit file lokal:
+
+```text
+templates/stamp/parameters.openedx-quince-native.local.json
+```
+
+Minimal nilai penting:
+
+```text
+clusterName: edxquince
+virtualMachineSize: Standard_D4s_v5
+diskSize: 128
+adminUsername: edxicei atau azureuser
+installerGithubProjectName: armedx
+installerGithubBranch: quince-native-azure
+edxConfigurationGithubAccountName: matapandax
+edxConfigurationGithubBranch: install-openedx-quince-native
+openEdxRelease: open-release/quince.master
+```
+
+Jalankan deploy:
+
+```powershell
+.\Deploy-ARM.ps1 `
+  -AzureSubscriptionName "<Azure Subscription Name>" `
+  -ResourceGroupName "DEV-BLOCKCERT" `
+  -Location "southeastasia" `
+  -AadWebClientId "<App Registration Client ID>" `
+  -AadWebClientAppKey "<Client Secret>" `
+  -AadTenantId "<Tenant ID>" `
+  -FullDeploymentArmTemplateFile ".\templates\stamp\template-openedx-quince-native.json" `
+  -ParameterFile ".\templates\stamp\parameters.openedx-quince-native.local.json" `
+  -clusterName "edxquince" `
+  -virtualMachineSize "Standard_D4s_v5" `
+  -diskSize 128 `
+  -adminUsername "edxicei" `
+  -adminPassword "<password kuat untuk VM>"
+```
+
+## Install Manual via SSH
+
+Jika Azure CustomScript gagal, lanjutkan langsung dari SSH VM:
+
+```bash
+ssh edxicei@<public-ip-vm>
+```
+
+Clone branch deployment:
+
+```bash
+cd ~
+git clone --branch quince-native-azure https://github.com/matapandax/armedx.git armedx
+cd ~/armedx
+```
+
+Jika folder sudah ada:
+
+```bash
+cd ~/armedx
+git fetch origin
+git checkout quince-native-azure
+git pull --ff-only
+```
+
+Jalankan installer:
+
+```bash
+chmod +x utils/install/install-openedx-quince-native-ssh.sh
+
+OPENEDX_RELEASE=open-release/quince.master \
+CONFIGURATION_VERSION=install-openedx-quince-native \
+CONFIG_REPO=https://github.com/matapandax/configuration \
+./utils/install/install-openedx-quince-native-ssh.sh \
+  --lms-host edxquince-lms-tm.trafficmanager.net \
+  --cms-host edxquince-cms-tm.trafficmanager.net \
+  --mfe-host edxquince-mfe-tm.trafficmanager.net
+```
+
+Pantau log:
+
+```bash
+tail -f ~/openedx-quince-native-install/install.out
+```
+
+Jika ada sisa percobaan gagal:
+
+```bash
+sudo rm -rf /tmp/configuration
+```
+
+Lalu jalankan ulang installer.
+
+## Verifikasi
+
+Cek branch configuration:
+
+```bash
+cd /var/tmp/configuration
+git status
+git branch --show-current
+```
+
+Branch yang diharapkan:
+
+```text
+install-openedx-quince-native
+```
+
+Cek service:
+
+```bash
+sudo /edx/bin/supervisorctl status
+sudo systemctl status nginx
+```
+
+Cek akses dari VM:
+
+```bash
+curl -I -H "Host: edxquince-lms-tm.trafficmanager.net" http://localhost
+curl -I -H "Host: edxquince-cms-tm.trafficmanager.net" http://localhost
+curl -I -H "Host: edxquince-mfe-tm.trafficmanager.net" http://localhost
+```
+
+## Catatan
+
+Quince adalah release lama. Jalur ini dipakai karena kebutuhan native/compatibility, bukan karena ini jalur modern Open edX. Untuk production multi-VM, pisahkan dulu MySQL, MongoDB, Redis, search, dan file storage dari VM aplikasi sebelum menambahkan backend VM ke Load Balancer.
