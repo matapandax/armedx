@@ -186,6 +186,7 @@ EOF
 
 wget -O ansible-bootstrap.sh "${CONFIG_RAW_BASE}/util/install/ansible-bootstrap.sh"
 perl -0pi -e 's/PYTHON_VERSION="3\.5"/PYTHON_VERSION="3.8"/g; s/python3\.5-dev/python3.8-dev/g; s/python3\.5/python3.8/g' ansible-bootstrap.sh
+perl -0pi -e "s#https://github.com/edx/configuration(?:\\.git)?#${CONFIG_REPO}#g; s#https://github.com/openedx/configuration(?:\\.git)?#${CONFIG_REPO}#g" ansible-bootstrap.sh
 sudo -E bash ansible-bootstrap.sh
 
 wget -O - "${CONFIG_RAW_BASE}/util/install/generate-passwords.sh" | bash
