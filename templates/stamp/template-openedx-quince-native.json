@@ -1,0 +1,869 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location of all resources."
+            }
+        },
+        "clusterName": {
+            "type": "string",
+            "defaultValue": "edxquince",
+            "metadata": {
+                "description": "Cluster of resources root name"
+            }
+        },
+        "virtualMachineSize": {
+            "type": "string",
+            "defaultValue": "Standard_D4s_v5",
+            "allowedValues": [
+                "Standard_D1_v2",
+                "Standard_D2_v2",
+                "Standard_D3_v2",
+                "Standard_D4_v2",
+                "Standard_D5_v2",
+                "Standard_D11_v2",
+                "Standard_D12_v2",
+                "Standard_D13_v2",
+                "Standard_D14_v2",
+                "Standard_D15_v2",
+                "Standard_D2s_v3",
+                "Standard_D4s_v5",
+                "Standard_D8s_v5"
+            ],
+            "metadata": {
+                "description": "Virtual machine size."
+            }
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "azureuser",
+            "metadata": {
+                "description": "Administrator username."
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "minLength": 6,
+            "maxLength": 72,
+            "metadata": {
+                "description": "Password for the Virtual Machine administrator account. Must satisfy Azure password complexity rules."
+            }
+        },
+        "diskSize": {
+            "type": "int",
+            "defaultValue": 128,
+            "metadata": {
+                "descrption": "Size of Virtual Machine Disk"
+            }
+        },
+        "installerGithubAccountName": {
+            "type": "string",
+            "defaultValue": "matapandax",
+            "metadata": {
+                "description": "GitHub account for this deployment repository."
+            }
+        },
+        "installerGithubProjectName": {
+            "type": "string",
+            "defaultValue": "armedx",
+            "metadata": {
+                "description": "GitHub project for this deployment repository."
+            }
+        },
+        "installerGithubBranch": {
+            "type": "string",
+            "defaultValue": "quince-native-azure",
+            "metadata": {
+                "description": "Branch of this deployment repository to clone in the VM."
+            }
+        },
+        "edxConfigurationGithubAccountName": {
+            "type": "string",
+            "defaultValue": "matapandax",
+            "metadata": {
+                "description": "Configuration GitHub account for Quince native."
+            }
+        },
+        "edxConfigurationGithubProjectName": {
+            "type": "string",
+            "defaultValue": "configuration",
+            "metadata": {
+                "description": "Open edX unsupported configuration Github project name."
+            }
+        },
+        "edxConfigurationGithubBranch": {
+            "type": "string",
+            "defaultValue": "install-openedx-quince-native",
+            "metadata": {
+                "description": "Configuration branch/ref with Quince native fixes."
+            }
+        },
+        "openEdxRelease": {
+            "type": "string",
+            "defaultValue": "open-release/quince.master",
+            "metadata": {
+                "description": "Open edX named release passed to native.sh."
+            }
+        }
+    },
+    "variables": {
+        "clusterName": "[toLower(parameters('clusterName'))]",
+        "networkInterfaceName": "[concat(variables('clusterName'), '-nic')]",
+        "networkSecurityGroupName": "[concat(variables('clusterName'), '-nsg')]",
+        "networkSecurityRules": [
+            {
+                "name": "default-allow-ssh",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "22",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 1000,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "LMS",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "80",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 310,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "LMSSSLPort",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "443",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 320,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "CMS",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "18010",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 330,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "CMSSSLPort",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "48010",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 340,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "Certs",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "18090",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 350,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "Discovery",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "18381",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 360,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "Ecommerce",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "18130",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 370,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "edx-release",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "8099",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 380,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "Forum",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "18080",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 390,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "name": "Xqueue",
+                "properties": {
+                    "protocol": "TCP",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "18040",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 400,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            }
+        ],
+        "subnetName": "default",
+        "virtualNetworkName": "[concat(variables('clusterName'), '-vnet')]",
+        "addressPrefix": "10.0.0.0/16",
+        "subnetPrefix": "10.0.0.0/24",
+        "subnets": [
+            {
+                "name": "[variables('subnetName')]",
+                "properties": {
+                    "addressPrefix": "[variables('subnetPrefix')]"
+                }
+            }
+        ],
+        "publicIpAddressName": "[concat(variables('clusterName'), '-vm-ip')]",
+        "publicIpAddressType": "Dynamic",
+        "publicIpAddressSku": "Basic",
+        "virtualMachineName": "[concat(variables('clusterName'), '-vm')]",
+        "virtualMachineComputerName": "[variables('clusterName')]",
+        "diskNameSalt": "20201207080015",
+        "storageAccountNamePrefix": "[take(replace(variables('clusterName'), '-', ''), 7)]",
+        "storageAccountNameSuffix": "[uniqueString(resourceGroup().id, variables('clusterName'))]",
+        "diskStorageAccountName": "[concat(variables('storageAccountNamePrefix'), variables('storageAccountNameSuffix'), 'vhsa')]",
+        "diagnosticsStorageAccountName": "[concat(variables('storageAccountNamePrefix'), variables('storageAccountNameSuffix'), 'diag')]",
+        "storageAccountType": "Standard_LRS",
+        "storageAccountKind": "Storage",
+        "networkSecurityGroupId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups', variables('networkSecurityGroupName'))]",
+        "virtualNetworkId": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+        "subnetReference": "[concat(variables('virtualNetworkId'), '/subnets/', variables('subnetName'))]",
+        "storageContainerUri": "[concat(concat('https://', variables('diskStorageAccountName'), '.blob.core.windows.net/'), 'vhds/')]",
+        "loadBalancerName": "[concat(variables('clusterName'), '-lb')]",
+        "backEndPoolName": "[concat(variables('clusterName'), '-bepool')]",
+        "cmsPublicIpAddressName": "[concat(variables('clusterName'), '-cms-ip')]",
+        "lmsPublicIpAddressName": "[concat(variables('clusterName'), '-lms-ip')]",
+        "cmsFrontendIpConfigName": "CMS",
+        "lmsFrontendIpConfigName": "LMS",
+        "tcpProbeCMSName": "tcpProbeCMS",
+        "tcpProbeCMSSSLName": "tcpProbeCMSSSL",
+        "tcpProbeLMSName": "tcpProbeLMS",
+        "tcpProbeLMSSSLName": "tcpProbeLMSSSL",
+        "lbRulesCMSName": "LBRuleCMS",
+        "lbRulesCMSSSLName": "LBRuleCMS_SSL",
+        "lbRulesLMSName": "LBRuleLMS",
+        "lbRulesLMSSSLName": "LBRuleLMS_SSL",
+        "loadBalancingRules": [
+            {
+                "name": "[variables('lbRulesCMSName')]",
+                "properties": {
+                    "frontendIPConfiguration": {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/frontendIPConfigurations/', variables('cmsFrontendIpConfigName'))]"
+                    },
+                    "frontendPort": 80,
+                    "backendPort": 18010,
+                    "enableFloatingIP": false,
+                    "idleTimeoutInMinutes": 5,
+                    "protocol": "Tcp",
+                    "enableTcpReset": false,
+                    "loadDistribution": "SourceIP",
+                    "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backEndPoolName'))]"
+                    },
+                    "probe": {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/', variables('tcpProbeCMSName'))]"
+                    }
+                }
+            },
+            {
+                "name": "[variables('lbRulesCMSSSLName')]",
+                "properties": {
+                    "frontendIPConfiguration": {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/frontendIPConfigurations/', variables('cmsFrontendIpConfigName'))]"
+                    },
+                    "frontendPort": 443,
+                    "backendPort": 48010,
+                    "enableFloatingIP": false,
+                    "idleTimeoutInMinutes": 5,
+                    "protocol": "Tcp",
+                    "enableTcpReset": false,
+                    "loadDistribution": "SourceIP",
+                    "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backEndPoolName'))]"
+                    },
+                    "probe": {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/', variables('tcpProbeCMSSSLName'))]"
+                    }
+                }
+            },
+            {
+                "name": "[variables('lbRulesLMSName')]",
+                "properties": {
+                    "frontendIPConfiguration": {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/frontendIPConfigurations/', variables('lmsFrontendIpConfigName'))]"
+                    },
+                    "frontendPort": 80,
+                    "backendPort": 80,
+                    "enableFloatingIP": false,
+                    "idleTimeoutInMinutes": 5,
+                    "protocol": "Tcp",
+                    "enableTcpReset": false,
+                    "loadDistribution": "SourceIP",
+                    "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backEndPoolName'))]"
+                    },
+                    "probe": {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/', variables('tcpProbeLMSName'))]"
+                    }
+                }
+            },
+            {
+                "name": "[variables('lbRulesLMSSSLName')]",
+                "properties": {
+                    "frontendIPConfiguration": {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/frontendIPConfigurations/', variables('lmsFrontendIpConfigName'))]"
+                    },
+                    "frontendPort": 443,
+                    "backendPort": 443,
+                    "enableFloatingIP": false,
+                    "idleTimeoutInMinutes": 5,
+                    "protocol": "Tcp",
+                    "enableTcpReset": false,
+                    "loadDistribution": "SourceIP",
+                    "backendAddressPool": {
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('backEndPoolName'))]"
+                    },
+                    "probe": {
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/probes/', variables('tcpProbeLMSSSLName'))]"
+                    }
+                }
+            }
+        ],
+        "probes": [
+            {
+                "name": "[variables('tcpProbeCMSName')]",
+                "properties": {
+                    "protocol": "Http",
+                    "port": 18010,
+                    "requestPath": "/heartbeat",
+                    "intervalInSeconds": 5,
+                    "numberOfProbes": 6
+                }
+            },
+            {
+                "name": "[variables('tcpProbeCMSSSLName')]",
+                "properties": {
+                    "protocol": "Tcp",
+                    "port": 48010,
+                    "intervalInSeconds": 5,
+                    "numberOfProbes": 6
+                }
+            },
+            {
+                "name": "[variables('tcpProbeLMSName')]",
+                "properties": {
+                    "protocol": "Http",
+                    "port": 80,
+                    "requestPath": "/heartbeat",
+                    "intervalInSeconds": 5,
+                    "numberOfProbes": 6
+                }
+            },
+            {
+                "name": "[variables('tcpProbeLMSSSLName')]",
+                "properties": {
+                    "protocol": "Tcp",
+                    "port": 443,
+                    "intervalInSeconds": 5,
+                    "numberOfProbes": 6
+                }
+            }
+        ],
+        "cmsTrafficManagerName": "[concat(variables('clusterName'), '-cms-tm')]",
+        "lmsTrafficManagerName": "[concat(variables('clusterName'), '-lms-tm')]",
+        "mfeTrafficManagerName": "[concat(variables('clusterName'), '-mfe-tm')]"
+    },
+    "resources": [
+        {
+            "name": "[variables('networkInterfaceName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-10-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('networkSecurityGroupName'))]",
+                "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
+                "[concat('Microsoft.Network/publicIpAddresses/', variables('publicIpAddressName'))]",
+                "[concat('Microsoft.Network/loadBalancers/', variables('loadBalancerName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetReference')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "privateIPAddressVersion": "IPv4",
+                            "publicIpAddress": {
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', variables('publicIpAddressName'))]"
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName')), '/backendAddressPools/', variables('backEndPoolName'))]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[variables('networkSecurityGroupId')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2020-06-01",
+            "name": "[variables('loadBalancerName')]",
+            "type": "Microsoft.Network/loadBalancers",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Basic"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('cmsPublicIpAddressName'))]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('lmsPublicIpAddressName'))]"
+            ],
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "[variables('lmsFrontendIpConfigName')]",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIPAddresses', variables('lmsPublicIpAddressName'))]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[variables('cmsFrontendIpConfigName')]",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIPAddresses', variables('cmsPublicIpAddressName'))]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('backEndPoolName')]"
+                    }
+                ],
+                "inboundNatRules": [],
+                "loadBalancingRules": "[variables('loadBalancingRules')]",
+                "probes": "[variables('probes')]"
+            }
+        },
+        {
+            "apiVersion": "2019-02-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('cmsPublicIpAddressName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "publicIPAddressVersion": "IPv4",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[variables('cmsPublicIpAddressName')]"
+                }
+            }
+        },
+        {
+            "apiVersion": "2019-02-01",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "name": "[variables('lmsPublicIpAddressName')]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic",
+                "publicIPAddressVersion": "IPv4",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[variables('lmsPublicIpAddressName')]"
+                }
+            }
+        },
+        {
+            "name": "[variables('lmsTrafficManagerName')]",
+            "type": "Microsoft.Network/trafficManagerProfiles",
+            "apiVersion": "2018-04-01",
+            "tags": {},
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('lmsPublicIpAddressName'))]"
+            ],
+            "properties": {
+                "profileStatus": "Enabled",
+                "trafficRoutingMethod": "Priority",
+                "dnsConfig": {
+                    "relativeName": "[variables('lmsTrafficManagerName')]",
+                    "ttl": 60
+                },
+                "monitorConfig": {
+                    "protocol": "HTTP",
+                    "port": 80,
+                    "path": "/",
+                    "intervalInSeconds": 30,
+                    "timeoutInSeconds": 10,
+                    "toleratedNumberOfFailures": 3
+                },
+                "endpoints": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', variables('lmsTrafficManagerName')), '/externalEndpoints/endpoint')]",
+                        "name": "endpoint",
+                        "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
+                        "properties": {
+                            "endpointStatus": "Enabled",
+                            "target": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('lmsPublicIpAddressName')), '2019-02-01').dnsSettings.fqdn]",
+                            "weight": 1,
+                            "priority": 1
+                        }
+                    }
+                ],
+                "trafficViewEnrollmentStatus": "Disabled",
+                "maxReturn": 0
+            }
+        },
+        {
+            "name": "[variables('cmsTrafficManagerName')]",
+            "type": "Microsoft.Network/trafficManagerProfiles",
+            "apiVersion": "2018-04-01",
+            "tags": {},
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('cmsPublicIpAddressName'))]"
+            ],
+            "properties": {
+                "profileStatus": "Enabled",
+                "trafficRoutingMethod": "Priority",
+                "dnsConfig": {
+                    "relativeName": "[variables('cmsTrafficManagerName')]",
+                    "ttl": 60
+                },
+                "monitorConfig": {
+                    "protocol": "HTTP",
+                    "port": 80,
+                    "path": "/",
+                    "intervalInSeconds": 30,
+                    "timeoutInSeconds": 10,
+                    "toleratedNumberOfFailures": 3
+                },
+                "endpoints": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', variables('cmsTrafficManagerName')), '/externalEndpoints/endpoint')]",
+                        "name": "endpoint",
+                        "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
+                        "properties": {
+                            "endpointStatus": "Enabled",
+                            "target": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('cmsPublicIpAddressName')), '2019-02-01').dnsSettings.fqdn]",
+                            "weight": 1,
+                            "priority": 1
+                        }
+                    }
+                ],
+                "trafficViewEnrollmentStatus": "Disabled",
+                "maxReturn": 0
+            }
+        },
+        {
+            "name": "[variables('mfeTrafficManagerName')]",
+            "type": "Microsoft.Network/trafficManagerProfiles",
+            "apiVersion": "2018-04-01",
+            "tags": {},
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('lmsPublicIpAddressName'))]"
+            ],
+            "properties": {
+                "profileStatus": "Enabled",
+                "trafficRoutingMethod": "Priority",
+                "dnsConfig": {
+                    "relativeName": "[variables('mfeTrafficManagerName')]",
+                    "ttl": 60
+                },
+                "monitorConfig": {
+                    "protocol": "HTTP",
+                    "port": 80,
+                    "path": "/",
+                    "intervalInSeconds": 30,
+                    "timeoutInSeconds": 10,
+                    "toleratedNumberOfFailures": 3
+                },
+                "endpoints": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', variables('mfeTrafficManagerName')), '/externalEndpoints/endpoint')]",
+                        "name": "endpoint",
+                        "type": "Microsoft.Network/trafficManagerProfiles/externalEndpoints",
+                        "properties": {
+                            "endpointStatus": "Enabled",
+                            "target": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('lmsPublicIpAddressName')), '2019-02-01').dnsSettings.fqdn]",
+                            "weight": 1,
+                            "priority": 1
+                        }
+                    }
+                ],
+                "trafficViewEnrollmentStatus": "Disabled",
+                "maxReturn": 0
+            }
+        },
+        {
+            "name": "[variables('networkSecurityGroupName')]",
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": "[variables('networkSecurityRules')]"
+            }
+        },
+        {
+            "name": "[variables('virtualNetworkName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2019-09-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": "[variables('subnets')]"
+            }
+        },
+        {
+            "name": "[variables('publicIpAddressName')]",
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2019-02-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "publicIpAllocationMethod": "[variables('publicIpAddressType')]",
+                "publicIPAddressVersion": "IPv4",
+                "idleTimeoutInMinutes": 4,
+                "dnsSettings": {
+                    "domainNameLabel": "[variables('clusterName')]"
+                }
+            },
+            "sku": {
+                "name": "[variables('publicIpAddressSku')]"
+            }
+        },
+        {
+            "name": "[variables('diskStorageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-04-01",
+            "location": "[resourceGroup().location]",
+            "properties": {},
+            "kind": "[variables('storageAccountKind')]",
+            "sku": {
+                "name": "[variables('storageAccountType')]"
+            }
+        },
+        {
+            "name": "[variables('virtualMachineName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2020-06-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Storage/storageAccounts/', variables('diskStorageAccountName'))]",
+                "[concat('Microsoft.Network/networkInterfaces/', variables('networkInterfaceName'))]",
+                "[concat('Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "createOption": "fromImage",
+                        "vhd": {
+                            "uri": "[concat(variables('storageContainerUri'), variables('virtualMachineName'), variables('diskNameSalt'), '.vhd')]"
+                        },
+                        "name": "[variables('virtualMachineName')]",
+                        "caching": "ReadWrite",
+                        "diskSizeGB": "[parameters('diskSize')]"
+                    },
+                    "imageReference": {
+                        "publisher": "canonical",
+                        "offer": "0001-com-ubuntu-server-focal",
+                        "sku": "20_04-lts",
+                        "version": "latest"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('networkInterfaceName'))]"
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachineComputerName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false
+                    }
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "[concat('https://', variables('diagnosticsStorageAccountName'), '.blob.core.windows.net/')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[variables('diagnosticsStorageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-04-01",
+            "location": "[resourceGroup().location]",
+            "properties": {},
+            "kind": "[variables('storageAccountKind')]",
+            "sku": {
+                "name": "[variables('storageAccountType')]"
+            }
+        },
+        {
+            "name": "[concat(variables('virtualMachineName'), '/install-edx')]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2021-07-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[concat('Microsoft.Compute/virtualMachines/', variables('virtualMachineName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.1",
+                "autoUpgradeMinorVersion": true,
+                "forceUpdateTag": "[deployment().name]",
+                "settings": {},
+                "protectedSettings": {
+                    "commandToExecute": "[concat('bash -c \"set -euxo pipefail; export DEBIAN_FRONTEND=noninteractive; ', 'if command -v cloud-init >/dev/null 2>&1; then sudo cloud-init status --wait || true; fi; ', 'while sudo fuser /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock /var/lib/apt/lists/lock >/dev/null 2>&1; do sleep 10; done; ', 'sudo mkdir -p /var/lib/apt/lists/partial; for attempt in 1 2 3 4 5; do sudo apt-get update -y && break || sleep 20; done; ', 'sudo apt-get install -y git ca-certificates; ', 'repo=/home/', parameters('adminUsername'), '/armedx; ', 'if [ -d \"$repo/.git\" ]; then sudo -H -u ', parameters('adminUsername'), ' git -C \"$repo\" pull --ff-only; else sudo -H -u ', parameters('adminUsername'), ' git clone --branch ', parameters('installerGithubBranch'), ' https://github.com/', parameters('installerGithubAccountName'), '/', parameters('installerGithubProjectName'), '.git \"$repo\"; fi; ', 'sudo -H -u ', parameters('adminUsername'), ' bash -lc \"cd /home/', parameters('adminUsername'), '/armedx && chmod +x utils/install/install-openedx-quince-native-ssh.sh && OPENEDX_RELEASE=', parameters('openEdxRelease'), ' CONFIGURATION_VERSION=', parameters('edxConfigurationGithubBranch'), ' CONFIG_REPO=https://github.com/', parameters('edxConfigurationGithubAccountName'), '/', parameters('edxConfigurationGithubProjectName'), ' ./utils/install/install-openedx-quince-native-ssh.sh --lms-host ', variables('lmsTrafficManagerName'), '.trafficmanager.net --cms-host ', variables('cmsTrafficManagerName'), '.trafficmanager.net --mfe-host ', variables('mfeTrafficManagerName'), '.trafficmanager.net\"\"')]"
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "adminUsername": {
+            "type": "string",
+            "value": "[parameters('adminUsername')]"
+        },
+        "lmsUrl": {
+            "type": "string",
+            "value": "[concat('http://', variables('lmsTrafficManagerName'), '.trafficmanager.net')]"
+        },
+        "cmsUrl": {
+            "type": "string",
+            "value": "[concat('http://', variables('cmsTrafficManagerName'), '.trafficmanager.net')]"
+        },
+        "mfeUrl": {
+            "type": "string",
+            "value": "[concat('http://', variables('mfeTrafficManagerName'), '.trafficmanager.net')]"
+        }
+    }
+}

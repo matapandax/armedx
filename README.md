@@ -67,6 +67,8 @@ This project contains an **ARM Template** and some scripts used to deploy **Open
 See the Indonesian Azure install guide in [docs/azure-install.md](./docs/azure-install.md).
 For native Koa (`open-release/koa.3`), use [docs/azure-openedx-koa.md](./docs/azure-openedx-koa.md).
 For SSH clone based native Koa, use [docs/architecture-ssh-koa.md](./docs/architecture-ssh-koa.md).
+For native Open edX Quince on Azure Load Balancer with LMS/CMS/MFE DNS, use [docs/architecture-openedx-quince-native-azure-lb-mfe.md](./docs/architecture-openedx-quince-native-azure-lb-mfe.md).
+The Quince native ARM entrypoints are `templates/stamp/template-openedx-quince-native.json` and `templates/stamp/parameters.openedx-quince-native.example.json`.
 
 **Check out Azure Virtual Machines Sizes [here][vmsizes].**
 

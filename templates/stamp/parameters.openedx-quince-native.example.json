@@ -1,0 +1,45 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterName": {
+            "value": "edxquince"
+        },
+        "location": {
+            "value": "southeastasia"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_D4s_v5"
+        },
+        "diskSize": {
+            "value": 128
+        },
+        "adminUsername": {
+            "value": "azureuser"
+        },
+        "adminPassword": {
+            "value": "ChangeMe-Use-A-Strong-Password-123!"
+        },
+        "installerGithubAccountName": {
+            "value": "matapandax"
+        },
+        "installerGithubProjectName": {
+            "value": "armedx"
+        },
+        "installerGithubBranch": {
+            "value": "quince-native-azure"
+        },
+        "edxConfigurationGithubAccountName": {
+            "value": "matapandax"
+        },
+        "edxConfigurationGithubProjectName": {
+            "value": "configuration"
+        },
+        "edxConfigurationGithubBranch": {
+            "value": "install-openedx-quince-native"
+        },
+        "openEdxRelease": {
+            "value": "open-release/quince.master"
+        }
+    }
+}
